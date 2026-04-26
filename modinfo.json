@@ -1,0 +1,16 @@
+{
+  "type": "Content",
+  "modid": "aldiclasses",
+  "name": "Aldi's Classes",
+  "authors": [
+    "Aldi",
+    "Krima"
+  ],
+  "description": "All-new classes alongside reimagined favorites!",
+  "version": "1.11.0",
+  "dependencies": {
+    "em": "*"
+  },
+  "RequiredOnClient": true,
+  "RequiredOnServer": true
+}
