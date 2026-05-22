@@ -1,0 +1,1552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>X-Skills Editor — v5 · 1.22 Compatible</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg: #080b14; --panel: #0f1622; --card: #162030; --hover: #1e2d44;
+  --border: #243048; --accent: #7c5cbf; --glow: #a07de8; --blue: #4a9eff;
+  --text: #dde4f0; --sub: #7a8a9e; --muted: #3a4a60;
+  --green: #3fb878; --orange: #e8923a; --red: #e05252; --gold: #d4af37;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);height:100vh;display:flex;flex-direction:column;overflow:hidden;font-size:13px}
+/* Header */
+header{background:var(--panel);border-bottom:1px solid var(--border);padding:10px 18px;display:flex;align-items:center;gap:14px;flex-shrink:0}
+.logo{font-size:16px;font-weight:700;color:var(--glow);letter-spacing:.3px}
+.logo span{font-size:12px;font-weight:400;color:var(--sub);margin-left:8px}
+.hdr-actions{margin-left:auto;display:flex;gap:6px}
+/* Buttons */
+.btn{padding:6px 13px;border-radius:5px;border:none;cursor:pointer;font-size:12px;font-weight:500;transition:all .15s}
+.btn-primary{background:var(--accent);color:#fff}.btn-primary:hover{background:var(--glow)}
+.btn-sec{background:var(--card);color:var(--sub);border:1px solid var(--border)}.btn-sec:hover{background:var(--hover);color:var(--text)}
+.btn-green{background:#144d2e;color:#6ee7a0;border:1px solid #1a7a40}.btn-green:hover{background:#1a6337}
+.btn-red{background:#4d1414;color:#f4a0a0;border:1px solid #7a2020}.btn-red:hover{background:#6b2020}
+.btn-sm{padding:3px 9px;font-size:11px}
+/* Layout */
+.layout{display:grid;grid-template-columns:210px 1fr 290px;flex:1;overflow:hidden}
+/* Sidebar */
+.sidebar{background:var(--panel);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+.sb-hdr{padding:10px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.sb-hdr h3{font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--sub)}
+.skill-list{flex:1;overflow-y:auto;padding:6px}
+.sk-item{padding:7px 10px;border-radius:5px;cursor:pointer;display:flex;align-items:center;gap:8px;margin-bottom:2px;border:1px solid transparent;transition:background .1s}
+.sk-item:hover{background:var(--hover)}.sk-item.active{background:var(--hover);border-color:var(--accent)}
+.sk-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.sk-name{flex:1;font-size:13px}.sk-count{font-size:11px;color:var(--muted)}
+/* Editor */
+.editor{display:flex;flex-direction:column;overflow:hidden}
+.empty{flex:1;display:flex;align-items:center;justify-content:center;color:var(--muted)}
+.tabs{display:flex;background:var(--panel);border-bottom:1px solid var(--border);padding:0 14px;flex-shrink:0;overflow-x:auto}
+.tab{padding:9px 14px;cursor:pointer;color:var(--sub);border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap}
+.tab:hover{color:var(--text)}.tab.active{color:var(--glow);border-bottom-color:var(--glow)}
+.tab-body{flex:1;overflow-y:auto;padding:18px}
+/* Forms */
+.fg{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+.fg label{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--sub)}
+input[type=text],input[type=number],select,textarea{background:var(--card);border:1px solid var(--border);color:var(--text);padding:6px 9px;border-radius:5px;font-size:13px;width:100%;transition:border-color .15s}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
+select option{background:var(--card)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.grid4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px}
+.row{display:flex;gap:8px;align-items:flex-end}
+/* Section */
+.sec{font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:var(--sub);margin:16px 0 10px;padding-bottom:7px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+/* Abilities */
+.ab-card{background:var(--card);border:1px solid var(--border);border-radius:7px;overflow:hidden;margin-bottom:6px}
+.ab-hdr{padding:9px 13px;display:flex;align-items:center;gap:8px;cursor:pointer;transition:background .1s}
+.ab-hdr:hover{background:var(--hover)}.ab-card.open .ab-hdr{background:var(--hover);border-bottom:1px solid var(--border)}
+.ab-idx{font-size:11px;color:var(--muted);width:22px}
+.ab-name{flex:1;font-weight:500}
+.ab-badges{display:flex;gap:5px}
+.badge{font-size:11px;background:var(--bg);padding:2px 7px;border-radius:4px;color:var(--sub)}
+.ab-body{padding:13px;display:none}.ab-card.open .ab-body{display:block}
+.ab-form{display:grid;grid-template-columns:1fr 1fr 1fr auto auto;gap:10px;margin-bottom:12px;align-items:end}
+.vals-wrap{margin-top:8px}
+.vals-label{font-size:11px;text-transform:uppercase;color:var(--sub);margin-bottom:6px;display:flex;align-items:center;gap:8px}
+.tier-sep{font-size:10px;color:var(--accent);margin:0 4px}
+.vals-row{display:flex;flex-wrap:wrap;gap:5px;align-items:center}
+.val-box{display:flex;flex-direction:column;align-items:center;gap:2px}
+.val-box span{font-size:10px;color:var(--muted)}
+.val-box input{width:58px;text-align:center;padding:5px 4px;color:var(--blue)}
+.add-val-btn{width:32px;height:32px;background:var(--bg);border:1px dashed var(--border);border-radius:5px;color:var(--muted);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center}
+.add-val-btn:hover{border-color:var(--accent);color:var(--accent)}
+/* Class multipliers */
+.cls-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(195px,1fr));gap:6px}
+.cls-row{background:var(--card);border:1px solid var(--border);border-radius:5px;padding:7px 11px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.cls-name{font-size:13px;text-transform:capitalize;flex:1}
+.cls-input{width:68px;text-align:center;padding:5px 6px}
+/* Attrs */
+.attr-list{display:flex;flex-direction:column;gap:6px}
+.attr-row{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:center}
+/* Synergies */
+.syn-row{background:var(--card);border:1px solid var(--border);border-radius:5px;padding:9px 12px;display:grid;grid-template-columns:1fr 1fr auto;gap:10px;align-items:center;margin-bottom:6px}
+.prereq-row{background:var(--card);border:1px solid var(--border);border-radius:5px;padding:9px 12px;display:grid;grid-template-columns:1fr 1fr 80px auto;gap:10px;align-items:center;margin-bottom:6px}
+/* Right panel */
+.rpanel{background:var(--panel);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+.rp-hdr{padding:10px 14px;border-bottom:1px solid var(--border);font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:var(--sub);flex-shrink:0}
+.rp-body{flex:1;padding:14px;overflow-y:auto;display:flex;flex-direction:column;gap:14px}
+.stat-row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px}
+.stat-row:last-child{border-bottom:none}
+.stat-l{color:var(--sub)}.stat-v{font-weight:500;color:var(--text)}
+.json-pre{background:var(--bg);border:1px solid var(--border);border-radius:5px;padding:10px;font-family:'Consolas','Courier New',monospace;font-size:10.5px;color:#82b8d8;overflow:auto;white-space:pre;max-height:220px}
+/* Toast */
+.toast{position:fixed;bottom:18px;right:18px;background:var(--card);border:1px solid var(--accent);border-radius:7px;padding:9px 15px;font-size:13px;color:var(--glow);opacity:0;transform:translateY(8px);transition:all .25s;pointer-events:none;z-index:9999}
+.toast.show{opacity:1;transform:translateY(0)}
+/* Scrollbar */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--sub)}
+/* Checkbox */
+.ck-row{display:flex;align-items:center;gap:8px;cursor:pointer}
+.ck-row input[type=checkbox]{width:15px;height:15px;accent-color:var(--accent)}
+/* Requires chips */
+.req-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+.req-chip{display:flex;align-items:center;gap:5px;background:var(--bg);padding:3px 9px;border-radius:4px;border:1px solid var(--border);font-size:11px;cursor:pointer;transition:border-color .1s;color:var(--sub)}
+.req-chip:hover{border-color:var(--accent);color:var(--text)}
+.req-chip input{margin:0;width:13px;height:13px;accent-color:var(--accent);pointer-events:none}
+.req-chip.active{border-color:var(--accent);color:var(--glow);background:var(--hover)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">⚔ X-Skills Editor <span>v5 · HoR-XLib 1.22 Compatible</span></div>
+  <div class="hdr-actions">
+    <button class="btn btn-sec" onclick="document.getElementById('fileInput').click()">📥 Import JSON</button>
+    <button class="btn btn-primary" onclick="exportSkill()">📤 Export Skill</button>
+    <button class="btn btn-green" onclick="exportAll()">📦 Export All Skills</button>
+  </div>
+</header>
+
+<div class="layout">
+  <div class="sidebar">
+    <div class="sb-hdr">
+      <h3>Skills (<span id="skillCount">0</span>)</h3>
+      <button class="btn btn-primary btn-sm" onclick="addSkill()">+ New</button>
+    </div>
+    <div class="skill-list" id="skillList"></div>
+  </div>
+
+  <div class="editor" id="editor">
+    <div class="empty">← Select a skill to edit, or create a new one</div>
+  </div>
+
+  <div class="rpanel">
+    <div class="rp-hdr">Stats & Export Preview</div>
+    <div class="rp-body" id="rPanel">
+      <p style="color:var(--muted);font-size:12px">Select a skill to see its stats and JSON preview.</p>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<input type="file" id="fileInput" accept=".json" style="display:none" onchange="handleImport(event)">
+
+<script>
+// ─── CONSTANTS ────────────────────────────────────────────────────────────────
+const ALL_CLASSES = [
+  'miner','blacksmith','potter','mason','lumberjack','carpenter','farmer','innkeeper',
+  'squire','mercenary','wanderer','wildrunner','commoner','hunter','druid',
+  'entropic','clockmaker','malefactor','blackguard','earthshaper','deepforger',
+  'shadowstrider','timberborn','handwright','threadweaver','tailor'
+];
+
+const SKILL_COLORS = {
+  mining:'#d97706',combat:'#dc2626',farming:'#16a34a',forestry:'#059669',
+  husbandry:'#a16207',digging:'#92400e',metalworking:'#6b7280',pottery:'#ea580c',
+  cooking:'#ca8a04',survival:'#2563eb',temporaladaptation:'#7c3aed',
+  alchemy:'#0d9488',engineering:'#4338ca',masonry:'#64748b'
+};
+
+const SKILL_NAMES = Object.keys(SKILL_COLORS);
+
+// ─── SEED DATA ────────────────────────────────────────────────────────────────
+const SEED = [
+  {
+    name:"mining",id:4,maxLevel:25,minLevel:1,expBase:200,expMult:100,expValue:8,expEquation:"quadratic",
+    enabled:true,expLossOnDeath:0,maxExpLossOnDeath:0,
+    abilities:[
+      {name:"stonebreaker",id:0,maxTier:3,minLevel:1,enabled:true,values:[10,2,30,20,4,60,20,4,100]},
+      {name:"stonecutter",id:1,maxTier:3,minLevel:1,enabled:true,values:[2,1,12,4,2,24,4,2,44]},
+      {name:"oreminer",id:2,maxTier:3,minLevel:1,enabled:true,values:[5,1,15,10,2,30,10,2,50]},
+      {name:"gemstoneminer",id:3,maxTier:3,minLevel:5,enabled:true,values:[5,1,15,10,2,30,10,2,50]},
+      {name:"pickaxeexpert",id:4,maxTier:3,minLevel:1,enabled:true,values:[1,1,2,10,4,2,2,4,10,6,2,2,6,10,8]},
+      {name:"carefulminer",id:5,maxTier:3,minLevel:1,enabled:true,values:[5,1,15,5,2,25,5,2,45]},
+      {name:"miner",id:6,maxTier:1,minLevel:5,enabled:true,values:[40]},
+      {name:"crystalseeker",id:7,maxTier:1,minLevel:5,enabled:true,values:[100]},
+      {name:"bomberman",id:8,maxTier:3,minLevel:7,enabled:true,values:[33,66,100]},
+      {name:"geologist",id:9,maxTier:3,minLevel:10,enabled:true,values:[1,2,3]},
+      {name:"veinminer",id:10,maxTier:1,minLevel:12,enabled:true,values:[2,3,10,100,10]},
+      {name:"tunneldigger",id:11,maxTier:1,minLevel:12,enabled:true,values:[50,20]},
+      {name:"blaster",id:12,maxTier:1,minLevel:12,enabled:true,values:[]}
+    ],
+    Attributes:{geologistBlacklist:"quartz",oreRarityExpMultiplier:"0.5",oreDepthExpMultiplier:"0.5"},
+    ClassExpMultipliers:{miner:0.25,blacksmith:0.15,potter:0.15,mason:0.25,lumberjack:-0.05,carpenter:0.15,farmer:-0.15,innkeeper:-0.1,squire:-0.05,mercenary:-0.1,wanderer:-0.05,wildrunner:-0.1,commoner:0.1,hunter:-0.2,druid:-0.1,entropic:0.15,clockmaker:0.15,malefactor:-0.1,blackguard:0.15,earthshaper:0.25,deepforger:0.25,shadowstrider:-0.05,timberborn:-0.1,tailor:-0.2},
+    synergySources:[],prerequisiteSkills:{}
+  },
+  {
+    name:"combat",id:6,maxLevel:25,minLevel:1,expBase:100,expMult:50,expValue:4,expEquation:"quadratic",
+    enabled:true,expLossOnDeath:0,maxExpLossOnDeath:0,
+    abilities:[
+      {name:"swordsman",id:0,maxTier:3,minLevel:1,enabled:true,values:[10,1,20,20,2,40,20,2,60]},
+      {name:"archer",id:1,maxTier:3,minLevel:1,enabled:true,values:[10,1,20,20,2,40,20,2,60]},
+      {name:"spearman",id:2,maxTier:3,minLevel:1,enabled:true,values:[10,1,20,20,2,40,20,2,60]},
+      {name:"tank",id:3,maxTier:2,minLevel:1,enabled:true,values:[10,1,20,20,1,40]},
+      {name:"defender",id:4,maxTier:2,minLevel:1,enabled:true,values:[3,5]},
+      {name:"guardian",id:5,maxTier:2,minLevel:1,enabled:true,values:[5,10]},
+      {name:"toolmastery",id:6,maxTier:3,minLevel:1,enabled:true,values:[5,2,25,15,3,40,15,3,75]},
+      {name:"ironfist",id:7,maxTier:3,minLevel:1,enabled:true,values:[2,3,4]},
+      {name:"monk",id:8,maxTier:3,minLevel:1,enabled:true,values:[6,9,12]},
+      {name:"looter",id:9,maxTier:2,minLevel:1,enabled:true,values:[10,1,20,20,2,40]},
+      {name:"heavyarmorexpert",id:10,maxTier:2,minLevel:3,enabled:true,values:[20,50,40,100]},
+      {name:"lightarmorexpert",id:11,maxTier:2,minLevel:3,enabled:true,values:[5,10]},
+      {name:"armoredagility",id:12,maxTier:2,minLevel:3,enabled:true,values:[20,40]},
+      {name:"warrior",id:13,maxTier:1,minLevel:5,enabled:true,values:[40]},
+      {name:"bully",id:14,maxTier:2,minLevel:5,enabled:true,values:[0,1,10,5,1,25]},
+      {name:"sniper",id:15,maxTier:2,minLevel:5,enabled:true,values:[15,30]},
+      {name:"freshflesh",id:16,maxTier:3,minLevel:5,enabled:true,values:[10,20,30]},
+      {name:"shovelknight",id:17,maxTier:2,minLevel:5,enabled:true,values:[1,10,2,15]},
+      {name:"adrenalinerush",id:18,maxTier:2,minLevel:7,enabled:true,values:[20,20,25,10,24,20,40,50,12,20]},
+      {name:"vampire",id:19,maxTier:3,minLevel:7,enabled:true,values:[3,80,5,65,7,50]},
+      {name:"drunkenmaster",id:20,maxTier:1,minLevel:8,enabled:true,values:[50,50]},
+      {name:"burningrage",id:21,maxTier:3,minLevel:10,enabled:true,values:[2,4,6]},
+      {name:"bloodlust",id:22,maxTier:1,minLevel:10,enabled:true,values:[2,3,16,10]},
+      {name:"monsterexpert",id:23,maxTier:1,minLevel:10,enabled:true,values:[]}
+    ],
+    Attributes:{enableAbilitiesInPvP:"False"},
+    ClassExpMultipliers:{miner:0.05,blacksmith:0.1,potter:-0.1,mason:-0.05,lumberjack:-0.05,carpenter:-0.1,farmer:-0.1,innkeeper:0.05,squire:0.15,mercenary:0.25,wanderer:-0.2,wildrunner:0.25,commoner:0.1,hunter:0,druid:0.1,entropic:0.05,clockmaker:-0.2,malefactor:-0.1,blackguard:0.2,earthshaper:0.05,deepforger:0.5,shadowstrider:-0.25,timberborn:0.1,handwright:0.1,threadweaver:-0.05,tailor:-0.1},
+    synergySources:[],prerequisiteSkills:{}
+  },
+  {
+    name:"farming",id:1,maxLevel:25,minLevel:1,expBase:200,expMult:100,expValue:8,expEquation:"quadratic",
+    enabled:true,expLossOnDeath:0,maxExpLossOnDeath:0,
+    abilities:[
+      {name:"greenthumb",id:0,maxTier:3,minLevel:1,enabled:true,values:[10,2,30,20,4,60,20,4,100]},
+      {name:"demetersbless",id:1,maxTier:3,minLevel:1,enabled:true,values:[5,1,15,10,2,30,10,2,50]},
+      {name:"gatherer",id:2,maxTier:2,minLevel:1,enabled:true,values:[10,2,30,20,4,60]},
+      {name:"orchardist",id:3,maxTier:2,minLevel:3,enabled:true,values:[10,2,30,20,4,60]},
+      {name:"repotting",id:4,maxTier:1,minLevel:3,enabled:true,values:[]},
+      {name:"recycler",id:5,maxTier:2,minLevel:3,enabled:true,values:[0,65]},
+      {name:"carefulhands",id:6,maxTier:1,minLevel:3,enabled:true,values:[]},
+      {name:"farmer",id:7,maxTier:1,minLevel:5,enabled:true,values:[40]},
+      {name:"brightharvest",id:8,maxTier:2,minLevel:5,enabled:true,values:[40,80]},
+      {name:"cultivatedseeds",id:9,maxTier:2,minLevel:5,enabled:true,values:[10,1,30,10,2,50]},
+      {name:"beekeeper",id:10,maxTier:3,minLevel:5,enabled:true,values:[1,2,3]},
+      {name:"extensivefarming",id:11,maxTier:2,minLevel:6,enabled:true,values:[2,3]},
+      {name:"composting",id:12,maxTier:2,minLevel:7,enabled:true,values:[10,4,20,8]},
+      {name:"crossbreeding",id:13,maxTier:1,minLevel:8,enabled:true,values:[1]},
+      {name:"beemaster",id:14,maxTier:1,minLevel:10,enabled:true,values:[]}
+    ],
+    Attributes:{treeHarvestExp:"0.5"},
+    ClassExpMultipliers:{miner:-0.05,blacksmith:-0.1,potter:0.05,mason:-0.05,lumberjack:0.15,carpenter:-0.05,farmer:0.25,innkeeper:0.05,squire:-0.05,mercenary:-0.1,wanderer:0.05,wildrunner:-0.1,commoner:0.1,hunter:-0.15,druid:0.15,entropic:0,clockmaker:0.15,malefactor:0.1,blackguard:-0.15,earthshaper:0.1,deepforger:0,shadowstrider:-0.05,timberborn:0.05,handwright:-0.1,threadweaver:0.1,tailor:-0.15},
+    synergySources:[],prerequisiteSkills:{}
+  },
+  {
+    name:"forestry",id:3,maxLevel:25,minLevel:1,expBase:200,expMult:100,expValue:8,expEquation:"quadratic",
+    enabled:true,expLossOnDeath:0,maxExpLossOnDeath:0,
+    abilities:[
+      {name:"lumberjack",id:0,maxTier:3,minLevel:1,enabled:true,values:[10,1,20,20,2,40,20,2,60]},
+      {name:"afforestation",id:1,maxTier:2,minLevel:1,enabled:true,values:[10,20]},
+      {name:"moreladders",id:2,maxTier:2,minLevel:1,enabled:true,values:[10,2,30,20,4,60]},
+      {name:"resinfarmer",id:3,maxTier:1,minLevel:1,enabled:true,values:[2]},
+      {name:"treenursery",id:4,maxTier:3,minLevel:3,enabled:true,values:[87,74,60]},
+      {name:"axeexpert",id:5,maxTier:3,minLevel:1,enabled:true,values:[1,1,2,10,30,2,2,4,10,40,2,2,6,10,45]},
+      {name:"carefullumberjack",id:6,maxTier:3,minLevel:1,enabled:true,values:[5,1,15,5,2,25,5,2,45]},
+      {name:"forester",id:7,maxTier:1,minLevel:5,enabled:true,values:[40]},
+      {name:"charcoalburner",id:8,maxTier:3,minLevel:5,enabled:true,values:[13,26,40]},
+      {name:"stoker",id:9,maxTier:2,minLevel:5,enabled:true,values:[25,50]},
+      {name:"grafter",id:10,maxTier:2,minLevel:5,enabled:true,values:[50,100]},
+      {name:"resinextractor",id:11,maxTier:1,minLevel:7,enabled:true,values:[50]}
+    ],
+    Attributes:{},
+    ClassExpMultipliers:{miner:-0.05,blacksmith:-0.05,potter:0.1,mason:-0.05,lumberjack:0.25,carpenter:0.15,farmer:-0.05,innkeeper:0.15,squire:0.15,mercenary:-0.05,wanderer:0.1,wildrunner:-0.05,commoner:0.1,hunter:0.1,druid:-0.1,entropic:0,clockmaker:-0.15,malefactor:-0.2,blackguard:-0.05,earthshaper:-0.1,deepforger:0.05,shadowstrider:-0.05,timberborn:0.25,handwright:0.1,tailor:-0.1},
+    synergySources:[],prerequisiteSkills:{}
+  },
+  {
+    name:"husbandry",id:5,maxLevel:25,minLevel:1,expBase:100,expMult:50,expValue:4,expEquation:"quadratic",
+    enabled:true,expLossOnDeath:0,maxExpLossOnDeath:0,
+    abilities:[
+      {name:"hunter",id:0,maxTier:3,minLevel:1,enabled:true,values:[10,0,10,10,1,20,10,1,30]},
+      {name:"butcher",id:1,maxTier:3,minLevel:1,enabled:true,values:[5,1,15,1,10,5,2,25,1,15,5,2,45,1,20]},
+      {name:"furrier",id:2,maxTier:3,minLevel:1,enabled:true,values:[5,1,15,1,10,5,2,25,1,15,5,2,45,1,20]},
+      {name:"bonebreaker",id:3,maxTier:3,minLevel:1,enabled:true,values:[10,1,20,15,2,40,20,2,60]},
+      {name:"rancher",id:4,maxTier:2,minLevel:3,enabled:true,values:[33,2,5,50,3,10]},
+      {name:"feeder",id:5,maxTier:2,minLevel:3,enabled:true,values:[10,1,20,1,4,20,1,40,1,8]},
+      {name:"lightfooted",id:6,maxTier:2,minLevel:3,enabled:true,values:[-20,-40]},
+      {name:"shepherd",id:7,maxTier:1,minLevel:5,enabled:true,values:[40]},
+      {name:"preserver",id:8,maxTier:1,minLevel:5,enabled:true,values:[10,1,30]},
+      {name:"tanner",id:9,maxTier:3,minLevel:5,enabled:true,values:[10,1,20,10,2,30,10,2,50]},
+      {name:"cheesycheese",id:10,maxTier:2,minLevel:5,enabled:true,values:[5,1,5,2]},
+      {name:"catcher",id:11,maxTier:1,minLevel:6,enabled:true,values:[]},
+      {name:"breeder",id:12,maxTier:1,minLevel:8,enabled:true,values:[10,2,1,60]},
+      {name:"masshusbandry",id:13,maxTier:1,minLevel:10,enabled:true,values:[0,1,1,30]}
+    ],
+    Attributes:{},
+    ClassExpMultipliers:{miner:-0.05,blacksmith:-0.1,potter:-0.05,mason:-0.05,lumberjack:0.1,carpenter:-0.1,farmer:0.15,innkeeper:0.25,squire:0.05,mercenary:0,wanderer:-0.2,wildrunner:0,commoner:0.1,hunter:0.2,druid:0,entropic:0,clockmaker:-0.2,malefactor:0.15,blackguard:-0.1,shadowstrider:-0.05,timberborn:-0.1,handwright:-0.1,tailor:-0.1},
+    synergySources:[],prerequisiteSkills:{}
+  },
+  {
+    name:"digging",id:2,maxLevel:25,minLevel:1,expBase:200,expMult:100,expValue:8,expEquation:"quadratic",
+    enabled:true,expLossOnDeath:0,maxExpLossOnDeath:0,
+    abilities:[
+      {name:"claydigger",id:0,maxTier:3,minLevel:1,enabled:true,values:[10,2,30,20,4,60,20,4,100]},
+      {name:"peatcutter",id:1,maxTier:3,minLevel:1,enabled:true,values:[10,2,30,20,4,60,20,4,100]},
+      {name:"saltpeterdigger",id:2,maxTier:3,minLevel:1,enabled:true,values:[10,2,30,20,4,60,20,4,100]},
+      {name:"shovelexpert",id:3,maxTier:3,minLevel:1,enabled:true,values:[1,1,2,10,4,2,2,4,10,6,2,2,6,10,8]},
+      {name:"carefuldigger",id:4,maxTier:3,minLevel:1,enabled:true,values:[5,1,15,5,2,25,5,2,45]},
+      {name:"mixedclay",id:5,maxTier:2,minLevel:3,enabled:true,values:[50,100]},
+      {name:"quickpan",id:6,maxTier:2,minLevel:3,enabled:true,values:[50,100]},
+      {name:"golddigger",id:7,maxTier:3,minLevel:3,enabled:true,values:[10,2,30,20,4,60,20,4,100]},
+      {name:"digger",id:8,maxTier:1,minLevel:5,enabled:true,values:[40]},
+      {name:"scrapdetector",id:9,maxTier:2,minLevel:5,enabled:true,values:[2,4]},
+      {name:"scrapspecialist",id:10,maxTier:2,minLevel:5,enabled:true,values:[1,50,2,100]}
+    ],
+    Attributes:{},
+    ClassExpMultipliers:{miner:0.1,blacksmith:0.05,potter:0.5,mason:0.25,lumberjack:0.15,carpenter:-0.1,farmer:0.1,innkeeper:0.1,squire:0.05,mercenary:0,wanderer:0,wildrunner:-0.2,commoner:0.1,hunter:-0.15,druid:-0.05,entropic:0,clockmaker:-0.15,malefactor:0.1,blackguard:0.1,earthshaper:0.4,deepforger:0.15,shadowstrider:-0.05,timberborn:-0.1,tailor:-0.1},
+    synergySources:[],prerequisiteSkills:{}
+  },
+  {
+    name:"metalworking",id:7,maxLevel:25,minLevel:1,expBase:40,expMult:10,expValue:0.8,expEquation:"quadratic",
+    enabled:true,expLossOnDeath:0,maxExpLossOnDeath:0,
+    abilities:[
+      {name:"smelter",id:0,maxTier:3,minLevel:1,enabled:true,values:[10,20,25]},
+      {name:"metalrecovery",id:1,maxTier:3,minLevel:1,enabled:true,values:[5,4,3]},
+      {name:"heatinghits",id:2,maxTier:2,minLevel:1,enabled:true,values:[1,2]},
+      {name:"hammerexpert",id:3,maxTier:3,minLevel:1,enabled:true,values:[5,1,15,5,2,25,5,2,45]},
+      {name:"heavyhits",id:4,maxTier:1,minLevel:3,enabled:true,values:[]},
+      {name:"blacksmith",id:5,maxTier:2,minLevel:3,enabled:true,values:[1,5,2,10]},
+      {name:"metalworker",id:6,maxTier:1,minLevel:5,enabled:true,values:[40]},
+      {name:"finishingtouch",id:7,maxTier:3,minLevel:5,enabled:true,values:[1,1,2,2,2,4,2,2,6]},
+      {name:"duplicator",id:8,maxTier:3,minLevel:5,enabled:true,values:[5,0,5,5,1,15,5,1,25]},
+      {name:"salvager",id:9,maxTier:2,minLevel:5,enabled:true,values:[95,1,110,160,2,200]},
+      {name:"mastersmith",id:10,maxTier:2,minLevel:7,enabled:true,values:[2,3,4,4]},
+      {name:"senseoftime",id:11,maxTier:1,minLevel:8,enabled:true,values:[]},
+      {name:"machinelearning",id:12,maxTier:1,minLevel:8,enabled:true,values:[]},
+      {name:"bloomeryexpert",id:13,maxTier:1,minLevel:8,enabled:true,values:[]},
+      {name:"automatedsmithing",id:14,maxTier:1,minLevel:10,enabled:true,values:[1]}
+    ],
+    Attributes:{expBase:"1",expPerHit:"0.02",helveHammerPenalty:"0.75",useVanillaBits:"True",bitsForIngot:"21",chiselRecipesRatio:"0.5",allowFinishingTouchExploit:"False",qualitySteps:"0"},
+    ClassExpMultipliers:{miner:0,blacksmith:0.25,potter:0.1,mason:0.1,lumberjack:-0.1,carpenter:0.05,farmer:-0.15,innkeeper:0.05,squire:0.05,mercenary:0,wanderer:0.05,wildrunner:-0.1,commoner:0.1,hunter:-0.15,druid:-0.15,entropic:0.2,clockmaker:0.2,malefactor:-0.15,blackguard:0.15,earthshaper:0,deepforger:0.25,shadowstrider:0,timberborn:-0.05,handwright:0.1,tailor:-0.1},
+    synergySources:[{skillName:"mining",bonus:0.05}],prerequisiteSkills:{}
+  },
+  {
+    name:"pottery",id:8,maxLevel:25,minLevel:1,expBase:40,expMult:10,expValue:0.8,expEquation:"quadratic",
+    enabled:true,expLossOnDeath:0,maxExpLossOnDeath:0,
+    abilities:[
+      {name:"thrift",id:0,maxTier:3,minLevel:1,enabled:true,values:[3,6,10]},
+      {name:"layerlayer",id:1,maxTier:3,minLevel:1,enabled:true,values:[1,2,4]},
+      {name:"perfectfit",id:2,maxTier:1,minLevel:3,enabled:true,values:[]},
+      {name:"perfectionist",id:3,maxTier:1,minLevel:3,enabled:true,values:[]},
+      {name:"potter",id:4,maxTier:1,minLevel:5,enabled:true,values:[40]},
+      {name:"fastpotter",id:5,maxTier:3,minLevel:5,enabled:true,values:[1,1,2,2,2,4,2,2,6]},
+      {name:"jackpot",id:6,maxTier:3,minLevel:5,enabled:true,values:[5,0,5,5,1,15,5,1,25]},
+      {name:"infallible",id:7,maxTier:2,minLevel:5,enabled:true,values:[1,2]},
+      {name:"inspiration",id:8,maxTier:2,minLevel:7,enabled:true,values:[10,20]},
+      {name:"potterytimer",id:9,maxTier:1,minLevel:8,enabled:true,values:[]}
+    ],
+    Attributes:{},
+    ClassExpMultipliers:{miner:-0.05,blacksmith:0.15,potter:0.25,mason:-0.1,lumberjack:-0.1,carpenter:0.1,farmer:-0.1,innkeeper:-0.1,squire:0.1,mercenary:-0.2,wanderer:0.1,wildrunner:-0.05,commoner:0.1,hunter:0.15,druid:-0.1,entropic:0,clockmaker:0.2,malefactor:0.05,blackguard:-0.2,earthshaper:0.25,deepforger:-0.1,shadowstrider:-0.05,timberborn:0,handwright:0.1,threadweaver:0.05,tailor:0.1},
+    synergySources:[{skillName:"digging",bonus:0.05}],prerequisiteSkills:{}
+  },
+  {
+    name:"cooking",id:9,maxLevel:25,minLevel:1,expBase:40,expMult:10,expValue:0.8,expEquation:"quadratic",
+    enabled:true,expLossOnDeath:0,maxExpLossOnDeath:0,
+    abilities:[
+      {name:"canteencook",id:0,maxTier:3,minLevel:1,enabled:true,values:[34,67,100]},
+      {name:"fastfood",id:1,maxTier:3,minLevel:1,enabled:true,values:[10,1,20,20,2,40,20,2,60]},
+      {name:"welldone",id:2,maxTier:3,minLevel:1,enabled:true,values:[5,1,15,20,10,2,30,20,10,2,50,20]},
+      {name:"dilution",id:3,maxTier:3,minLevel:3,enabled:true,values:[10,1,20,20,1,30,20,1,40]},
+      {name:"desalinate",id:4,maxTier:3,minLevel:3,enabled:true,values:[1,1,2,1,4,2]},
+      {name:"saltybackpack",id:5,maxTier:3,minLevel:3,enabled:true,values:[75,66,50]},
+      {name:"gourmet",id:6,maxTier:2,minLevel:3,enabled:true,values:[1,5,2,10]},
+      {name:"chef",id:7,maxTier:1,minLevel:5,enabled:true,values:[40]},
+      {name:"happymeal",id:8,maxTier:3,minLevel:5,enabled:true,values:[10,1,20,20,2,40,20,2,60]},
+      {name:"juicer",id:9,maxTier:2,minLevel:6,enabled:true,values:[33,60]},
+      {name:"eggtimer",id:10,maxTier:1,minLevel:8,enabled:true,values:[]}
+    ],
+    Attributes:{expBase:"0.0004",fruitPressExpPerLitre:"0.05"},
+    ClassExpMultipliers:{miner:0.05,blacksmith:0.1,potter:0.1,mason:0.05,lumberjack:-0.1,carpenter:-0.1,farmer:0.1,innkeeper:0.25,squire:0.15,mercenary:-0.2,wanderer:0.15,wildrunner:-0.1,commoner:0.1,hunter:0,druid:0.05,entropic:0,clockmaker:-0.2,malefactor:-0.1,blackguard:0.2,earthshaper:0.05,deepforger:-0.1,shadowstrider:-0.05,timberborn:0.05,threadweaver:0.05,tailor:0.1},
+    synergySources:[{skillName:"farming",bonus:0.05},{skillName:"husbandry",bonus:0.05}],prerequisiteSkills:{}
+  },
+  {
+    name:"survival",id:0,maxLevel:25,minLevel:1,expBase:10,expMult:5,expValue:0.4,expEquation:"quadratic",
+    enabled:true,expLossOnDeath:0.5,maxExpLossOnDeath:10,
+    abilities:[
+      {name:"longlife",id:0,maxTier:3,minLevel:1,enabled:true,values:[5,1,15,10,2,30,10,2,50]},
+      {name:"hugestomach",id:1,maxTier:3,minLevel:1,enabled:true,values:[500,1000,1500]},
+      {name:"wellrested",id:2,maxTier:2,minLevel:1,enabled:true,values:[6,480,12,600]},
+      {name:"nudist",id:3,maxTier:2,minLevel:3,enabled:true,values:[6,2,3,1,10,3,4,1,10,2,5,1,20,4,8,2]},
+      {name:"meatshield",id:4,maxTier:3,minLevel:3,enabled:true,values:[10,20,20,15,30,10]},
+      {name:"diver",id:5,maxTier:2,minLevel:3,enabled:true,values:[50,75]},
+      {name:"featherfall",id:6,maxTier:2,minLevel:3,enabled:true,values:[1,10,2,20]},
+      {name:"allrounder",id:7,maxTier:1,minLevel:5,enabled:true,values:[1]},
+      {name:"photosynthesis",id:8,maxTier:3,minLevel:5,enabled:true,values:[15,25,40,50,50,50]},
+      {name:"strongback",id:9,maxTier:2,minLevel:5,enabled:true,values:[3,6]},
+      {name:"ontheroad",id:10,maxTier:1,minLevel:5,enabled:true,values:[10]},
+      {name:"scout",id:11,maxTier:1,minLevel:5,enabled:true,values:[5]},
+      {name:"healer",id:12,maxTier:2,minLevel:5,enabled:true,values:[25,30,50,30]},
+      {name:"steeplechaser",id:13,maxTier:2,minLevel:6,enabled:true,values:[100,250]},
+      {name:"sprinter",id:14,maxTier:2,minLevel:6,enabled:true,values:[5,10,10,20]},
+      {name:"abundanceadaptation",id:15,maxTier:2,minLevel:6,enabled:true,values:[5,10,10,20]},
+      {name:"soulboundbag",id:16,maxTier:1,minLevel:7,enabled:true,values:[]},
+      {name:"luminiferous",id:17,maxTier:3,minLevel:8,enabled:true,values:[4,2,10,4,2,15,4,2,20]},
+      {name:"cateyes",id:18,maxTier:2,minLevel:8,enabled:true,values:[6,2000,8,2000]},
+      {name:"meteorologist",id:19,maxTier:1,minLevel:8,enabled:true,values:[3,50]},
+      {name:"laststand",id:20,maxTier:1,minLevel:10,enabled:true,values:[200]}
+    ],
+    Attributes:{invSwitchCD:"3",allowCatEyesToggle:"False"},
+    ClassExpMultipliers:{miner:0.1,blacksmith:-0.05,potter:-0.15,mason:0,lumberjack:0.1,carpenter:-0.1,farmer:0.05,innkeeper:0,squire:0.15,mercenary:0.2,wanderer:0.25,wildrunner:0.2,commoner:0.1,hunter:0.2,druid:0.15,entropic:0.1,clockmaker:-0.2,malefactor:0.15,blackguard:-0.05,earthshaper:0,deepforger:0.1,shadowstrider:0.3,timberborn:0.15,handwright:-0.2,tailor:-0.1},
+    synergySources:[],prerequisiteSkills:{}
+  },
+  {
+    name:"temporaladaptation",id:10,maxLevel:25,minLevel:1,expBase:200,expMult:100,expValue:8,expEquation:"quadratic",
+    enabled:true,expLossOnDeath:0,maxExpLossOnDeath:0,
+    abilities:[
+      {name:"temporalstable",id:0,maxTier:3,minLevel:1,enabled:true,values:[5,1,15,10,2,30,10,2,50]},
+      {name:"caveman",id:1,maxTier:3,minLevel:1,enabled:true,values:[10,2,30,20,3,50,30,3,90]},
+      {name:"temporaladapted",id:2,maxTier:3,minLevel:1,enabled:true,values:[10,2,30,20,3,50,30,3,90]},
+      {name:"temporalrecovery",id:3,maxTier:2,minLevel:1,enabled:true,values:[50,100]},
+      {name:"shifter",id:4,maxTier:3,minLevel:3,enabled:true,values:[11,22,33]},
+      {name:"fastforward",id:5,maxTier:2,minLevel:3,enabled:true,values:[10,20]},
+      {name:"timelord",id:6,maxTier:1,minLevel:5,enabled:true,values:[40]},
+      {name:"stableminer",id:7,maxTier:2,minLevel:5,enabled:true,values:[10,20]},
+      {name:"stablewarrior",id:8,maxTier:2,minLevel:5,enabled:true,values:[10,20]},
+      {name:"temporalunstable",id:9,maxTier:3,minLevel:10,enabled:true,values:[33,66,100]},
+      {name:"timeless",id:10,maxTier:1,minLevel:10,enabled:true,values:[]}
+    ],
+    Attributes:{},
+    ClassExpMultipliers:{miner:0.15,blacksmith:-0.05,potter:-0.1,mason:0,lumberjack:-0.1,carpenter:-0.1,farmer:-0.15,innkeeper:-0.05,squire:-0.1,mercenary:0.15,wanderer:0.15,wildrunner:0.15,commoner:0.1,hunter:-0.15,druid:0.1,entropic:0.25,clockmaker:0.2,malefactor:-0.05,blackguard:0.1,earthshaper:0,deepforger:-0.05,shadowstrider:0.25,timberborn:0.1,threadweaver:0.15,tailor:0.15},
+    synergySources:[],prerequisiteSkills:{}
+  },
+  // NEW SKILLS from design doc
+  {
+    name:"alchemy",id:11,maxLevel:25,minLevel:1,expBase:40,expMult:10,expValue:0.8,expEquation:"quadratic",
+    enabled:true,expLossOnDeath:0,maxExpLossOnDeath:0,
+    abilities:[
+      {name:"herbalism",id:0,maxTier:3,minLevel:1,enabled:true,values:[10,20,30]},
+      {name:"crudeextraction",id:1,maxTier:2,minLevel:1,enabled:true,values:[10,25]},
+      {name:"alchemist",id:2,maxTier:1,minLevel:5,enabled:true,values:[40]},
+      {name:"salvecrafting",id:3,maxTier:3,minLevel:5,enabled:true,values:[10,20,35]},
+      {name:"distillation",id:4,maxTier:2,minLevel:7,enabled:true,values:[10,25]},
+      {name:"potionbrewing",id:5,maxTier:3,minLevel:8,enabled:true,values:[5,10,20]},
+      {name:"reagentrefinement",id:6,maxTier:2,minLevel:10,enabled:true,values:[10,25]},
+      {name:"candlecrafting",id:7,maxTier:2,minLevel:10,enabled:true,values:[2,4]},
+      {name:"tincturemastery",id:8,maxTier:3,minLevel:12,enabled:true,values:[5,10,20]},
+      {name:"philosophersextract",id:9,maxTier:1,minLevel:15,enabled:true,values:[1]},
+      {name:"grandtransmutation",id:10,maxTier:1,minLevel:20,enabled:true,values:[1]}
+    ],
+    Attributes:{},
+    ClassExpMultipliers:{miner:-0.1,blacksmith:-0.1,potter:0.15,mason:0,lumberjack:0,carpenter:-0.05,farmer:0.15,innkeeper:0.1,squire:0,mercenary:-0.1,wanderer:0.1,wildrunner:0,commoner:0.05,hunter:0.05,druid:0.25,entropic:0.1,clockmaker:0,malefactor:0.2,blackguard:0.1,earthshaper:0.1,deepforger:0,shadowstrider:0.1,timberborn:0,handwright:0,threadweaver:0.15,tailor:0.05},
+    synergySources:[{skillName:"farming",bonus:0.05},{skillName:"pottery",bonus:0.03},{skillName:"husbandry",bonus:0.03}],
+    prerequisiteSkills:{grandtransmutation:{skillName:"metalworking",minLevel:15},tincturemastery:{skillName:"cooking",minLevel:8}}
+  },
+  {
+    name:"engineering",id:12,maxLevel:25,minLevel:1,expBase:40,expMult:10,expValue:0.8,expEquation:"quadratic",
+    enabled:true,expLossOnDeath:0,maxExpLossOnDeath:0,
+    abilities:[
+      {name:"mechanicalaptitude",id:0,maxTier:3,minLevel:1,enabled:true,values:[5,10,15]},
+      {name:"gearefficiency",id:1,maxTier:2,minLevel:1,enabled:true,values:[10,25]},
+      {name:"engineer",id:2,maxTier:1,minLevel:5,enabled:true,values:[40]},
+      {name:"contraptionbuilder",id:3,maxTier:3,minLevel:5,enabled:true,values:[1,2,3]},
+      {name:"automatedharvester",id:4,maxTier:2,minLevel:8,enabled:true,values:[3,6]},
+      {name:"precisionsmithingjig",id:5,maxTier:2,minLevel:10,enabled:true,values:[10,25]},
+      {name:"steamassistedbellows",id:6,maxTier:2,minLevel:12,enabled:true,values:[20,40]},
+      {name:"blueprintmastery",id:7,maxTier:3,minLevel:15,enabled:true,values:[3,6,9]},
+      {name:"granddesign",id:8,maxTier:1,minLevel:20,enabled:true,values:[5]}
+    ],
+    Attributes:{},
+    ClassExpMultipliers:{miner:0,blacksmith:0.1,potter:0,mason:0.15,lumberjack:0,carpenter:0.1,farmer:-0.1,innkeeper:-0.1,squire:0,mercenary:0,wanderer:0,wildrunner:-0.1,commoner:0.05,hunter:-0.1,druid:-0.1,entropic:0.25,clockmaker:0.25,malefactor:0.05,blackguard:0,earthshaper:0.1,deepforger:0.2,shadowstrider:0,timberborn:0.15,handwright:0.2,tailor:0},
+    synergySources:[{skillName:"metalworking",bonus:0.05},{skillName:"mining",bonus:0.03}],
+    prerequisiteSkills:{contraptionbuilder:{skillName:"metalworking",minLevel:8},steamassistedbellows:{skillName:"metalworking",minLevel:10},granddesign:{skillName:"metalworking",minLevel:15}}
+  },
+  {
+    name:"masonry",id:13,maxLevel:25,minLevel:1,expBase:100,expMult:50,expValue:4,expEquation:"quadratic",
+    enabled:true,expLossOnDeath:0,maxExpLossOnDeath:0,
+    abilities:[
+      {name:"stonemason",id:0,maxTier:3,minLevel:1,enabled:true,values:[5,10,20]},
+      {name:"foundationlayer",id:1,maxTier:2,minLevel:1,enabled:true,values:[5,10]},
+      {name:"mason",id:2,maxTier:1,minLevel:5,enabled:true,values:[40]},
+      {name:"roadbuilder",id:3,maxTier:2,minLevel:5,enabled:true,values:[5,10]},
+      {name:"mortarmixing",id:4,maxTier:3,minLevel:5,enabled:true,values:[5,10,20]},
+      {name:"archengineering",id:5,maxTier:2,minLevel:8,enabled:true,values:[1,2]},
+      {name:"structuralanalysis",id:6,maxTier:2,minLevel:10,enabled:true,values:[5,10]},
+      {name:"quarryexpertise",id:7,maxTier:2,minLevel:12,enabled:true,values:[10,20]},
+      {name:"grandmonument",id:8,maxTier:1,minLevel:18,enabled:true,values:[1]}
+    ],
+    Attributes:{},
+    ClassExpMultipliers:{miner:0.1,blacksmith:0.1,potter:0.15,mason:0.25,lumberjack:-0.05,carpenter:0.1,farmer:-0.1,innkeeper:0,squire:0.05,mercenary:-0.05,wanderer:0,wildrunner:-0.1,commoner:0.05,hunter:-0.1,druid:-0.05,entropic:0.05,clockmaker:0.05,malefactor:0,blackguard:0,earthshaper:0.2,deepforger:0.15,shadowstrider:-0.05,timberborn:0,handwright:0.15,tailor:0},
+    synergySources:[{skillName:"digging",bonus:0.05},{skillName:"mining",bonus:0.03}],
+    prerequisiteSkills:{mortarmixing:{skillName:"digging",minLevel:5},grandmonument:{skillName:"mining",minLevel:10}}
+  }
+];
+
+// ─── STATE ────────────────────────────────────────────────────────────────────
+let skills = [];
+let activeId = null;
+let activeTab = 'overview';
+let chart = null;
+let previewMode = false;
+let previewUnlocked = new Set();
+let layoutTool = 'select';   // 'select' | 'connect' | 'erase'
+let layoutConnectStart = null;
+let layoutSelNode = null;
+let layoutGuides = true;
+
+function getSkill() { return skills.find(s => s.id === activeId); }
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  const saved = localStorage.getItem('xskills_v5');
+  skills = saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(SEED));
+  renderSidebar();
+  if (skills.length > 0) selectSkill(skills[0].id);
+});
+
+function save() { localStorage.setItem('xskills_v5', JSON.stringify(skills)); }
+
+// ─── SIDEBAR ─────────────────────────────────────────────────────────────────
+function renderSidebar() {
+  const list = document.getElementById('skillList');
+  document.getElementById('skillCount').textContent = skills.length;
+  list.innerHTML = skills.map(s => `
+    <div class="sk-item ${s.id === activeId ? 'active' : ''}" onclick="selectSkill(${s.id})">
+      <div class="sk-dot" style="background:${SKILL_COLORS[s.name] || '#7c5cbf'}"></div>
+      <span class="sk-name">${s.name}</span>
+      <span class="sk-count">${s.abilities.length}</span>
+    </div>`).join('');
+}
+
+function selectSkill(id) {
+  activeId = id;
+  activeTab = 'overview';
+  layoutSelNode = null; layoutConnectStart = null;
+  previewMode = false; previewUnlocked.clear();
+  renderSidebar();
+  renderEditor();
+  renderRightPanel();
+}
+
+// ─── SKILL CRUD ───────────────────────────────────────────────────────────────
+function addSkill() {
+  const newId = Math.max(0, ...skills.map(s => s.id)) + 1;
+  const s = {
+    name: `newskill${newId}`, id: newId, maxLevel: 25, minLevel: 1,
+    expBase: 100, expMult: 50, expValue: 4, expEquation: 'quadratic',
+    enabled: true, expLossOnDeath: 0, maxExpLossOnDeath: 0,
+    abilities: [], Attributes: {}, ClassExpMultipliers: {},
+    synergySources: [], prerequisiteSkills: {}
+  };
+  ALL_CLASSES.forEach(c => s.ClassExpMultipliers[c] = 0);
+  skills.push(s);
+  save();
+  selectSkill(newId);
+  toast('New skill created');
+}
+
+function deleteSkill() {
+  if (!confirm(`Delete skill "${getSkill()?.name}"?`)) return;
+  skills = skills.filter(s => s.id !== activeId);
+  activeId = skills.length ? skills[0].id : null;
+  save();
+  renderSidebar();
+  if (activeId) renderEditor(); else document.getElementById('editor').innerHTML = '<div class="empty">← Select a skill to edit, or create a new one</div>';
+  renderRightPanel();
+  toast('Skill deleted');
+}
+
+// ─── EDITOR ───────────────────────────────────────────────────────────────────
+function renderEditor() {
+  const s = getSkill(); if (!s) return;
+  document.getElementById('editor').innerHTML = `
+    <div class="tabs">
+      ${['overview','abilities','classes','attributes','synergies','layout'].map(t =>
+        `<div class="tab ${activeTab===t?'active':''}" onclick="switchTab('${t}')">${t.charAt(0).toUpperCase()+t.slice(1)}</div>`
+      ).join('')}
+    </div>
+    <div class="tab-body" id="tabBody"></div>`;
+  renderTab();
+}
+
+function switchTab(t) { activeTab = t; renderTab(); }
+
+function renderTab() {
+  const s = getSkill(); if (!s) return;
+  const body = document.getElementById('tabBody');
+  if (activeTab === 'overview') body.innerHTML = renderOverview(s);
+  else if (activeTab === 'abilities') body.innerHTML = renderAbilities(s);
+  else if (activeTab === 'classes') body.innerHTML = renderClasses(s);
+  else if (activeTab === 'attributes') body.innerHTML = renderAttributes(s);
+  else if (activeTab === 'synergies') body.innerHTML = renderSynergies(s);
+  else if (activeTab === 'layout') { body.innerHTML = renderLayout(s); }
+}
+
+// ─── OVERVIEW TAB ─────────────────────────────────────────────────────────────
+function renderOverview(s) { return `
+  <div class="sec">Identity</div>
+  <div class="grid3">
+    <div class="fg"><label>Skill Name (ID)</label><input type="text" value="${s.name}" onchange="updateField('name',this.value)"></div>
+    <div class="fg"><label>Numeric ID</label><input type="number" value="${s.id}" onchange="updateField('id',+this.value)"></div>
+    <div class="fg"><label>Enabled</label><label class="ck-row" style="margin-top:6px"><input type="checkbox" ${s.enabled?'checked':''} onchange="updateField('enabled',this.checked)"> Active in game</label></div>
+  </div>
+  <div class="sec">XP Settings</div>
+  <div class="grid4">
+    <div class="fg"><label>Min Level</label><input type="number" value="${s.minLevel}" onchange="updateField('minLevel',+this.value)"></div>
+    <div class="fg"><label>Max Level</label><input type="number" value="${s.maxLevel}" onchange="updateField('maxLevel',+this.value)"></div>
+    <div class="fg"><label>Equation</label><select onchange="updateField('expEquation',this.value)"><option ${s.expEquation==='quadratic'?'selected':''}>quadratic</option><option ${s.expEquation==='logarithmic'?'selected':''}>logarithmic</option></select></div>
+    <div class="fg"><label>Exp Value</label><input type="number" step="0.1" value="${s.expValue}" onchange="updateField('expValue',+this.value)"></div>
+  </div>
+  <div class="grid3">
+    <div class="fg"><label>Exp Base</label><input type="number" step="1" value="${s.expBase}" onchange="updateField('expBase',+this.value)"></div>
+    <div class="fg"><label>Exp Mult</label><input type="number" step="1" value="${s.expMult}" onchange="updateField('expMult',+this.value)"></div>
+    <div class="fg"><label>&nbsp;</label></div>
+  </div>
+  <div class="sec">Death Penalty</div>
+  <div class="grid2">
+    <div class="fg"><label>Exp Loss on Death (0–1)</label><input type="number" step="0.05" min="0" max="1" value="${s.expLossOnDeath}" onchange="updateField('expLossOnDeath',+this.value)"></div>
+    <div class="fg"><label>Max Exp Loss on Death</label><input type="number" step="1" value="${s.maxExpLossOnDeath}" onchange="updateField('maxExpLossOnDeath',+this.value)"></div>
+  </div>
+  <div style="margin-top:20px">
+    <button class="btn btn-red btn-sm" onclick="deleteSkill()">🗑 Delete Skill</button>
+  </div>`; }
+
+function updateField(key, val) {
+  const s = getSkill(); if (!s) return;
+  s[key] = val;
+  save();
+  if (key === 'name') renderSidebar();
+  renderRightPanel();
+}
+
+// ─── ABILITIES TAB ────────────────────────────────────────────────────────────
+function renderAbilities(s) {
+  return `
+  <div class="sec">Abilities (${s.abilities.length})<button class="btn btn-primary btn-sm" onclick="addAbility()">+ Add</button></div>
+  <div id="abList">${s.abilities.map((a,i) => renderAbilityCard(a,i)).join('')}</div>`;
+}
+
+function renderAbilityCard(a, i) {
+  const s = getSkill();
+  const valsHtml = renderValuesEditor(a);
+  const reqHtml = s ? renderRequiresEditor(a, s) : '';
+  const reqCount = (a.requires || []).length;
+  return `<div class="ab-card" id="ab_${a.id}">
+    <div class="ab-hdr" onclick="toggleAbility(${a.id})">
+      <span class="ab-idx">${i}</span>
+      <span class="ab-name">${a.name}</span>
+      <div class="ab-badges">
+        <span class="badge">Lv${a.minLevel}</span>
+        <span class="badge">T${a.maxTier}</span>
+        <span class="badge">${a.values.length}v</span>
+        ${reqCount ? `<span class="badge" style="color:var(--blue)">←${reqCount}</span>` : ''}
+        ${a.enabled?'':'<span class="badge" style="color:var(--red)">off</span>'}
+      </div>
+    </div>
+    <div class="ab-body">
+      <div class="ab-form">
+        <div class="fg"><label>Name</label><input type="text" value="${a.name}" onchange="updateAbility(${a.id},'name',this.value)"></div>
+        <div class="fg"><label>Min Level</label><input type="number" min="1" max="25" value="${a.minLevel}" onchange="updateAbility(${a.id},'minLevel',+this.value)"></div>
+        <div class="fg"><label>Max Tiers</label><input type="number" min="1" max="5" value="${a.maxTier}" onchange="updateAbility(${a.id},'maxTier',+this.value)"></div>
+        <div class="fg"><label>Enabled</label><label class="ck-row" style="margin-top:6px"><input type="checkbox" ${a.enabled?'checked':''} onchange="updateAbility(${a.id},'enabled',this.checked)"> On</label></div>
+        <div class="fg"><label>&nbsp;</label><button class="btn btn-red btn-sm" onclick="removeAbility(${a.id})">Remove</button></div>
+      </div>
+      <div class="vals-wrap">
+        <div class="vals-label">Values (flat array · tier groups shown by separator)</div>
+        <div class="vals-row" id="vals_${a.id}">${valsHtml}
+          <button class="add-val-btn" onclick="addValue(${a.id})" title="Add value">+</button>
+        </div>
+      </div>
+      ${reqHtml}
+    </div>
+  </div>`;
+}
+
+function renderValuesEditor(a) {
+  const vpt = a.maxTier > 0 ? Math.ceil(a.values.length / a.maxTier) : 1;
+  return a.values.map((v,i) => {
+    const tierBreak = vpt > 0 && i > 0 && i % vpt === 0;
+    return `${tierBreak ? '<span class="tier-sep">|T'+(Math.floor(i/vpt)+1)+'</span>' : ''}
+    <div class="val-box">
+      <span>${i}</span>
+      <input type="number" value="${v}" onchange="updateValue(${a.id},${i},+this.value)">
+    </div>`;
+  }).join('');
+}
+
+function toggleAbility(id) {
+  const card = document.getElementById(`ab_${id}`);
+  card.classList.toggle('open');
+}
+
+function updateAbility(id, key, val) {
+  const s = getSkill(); if (!s) return;
+  const a = s.abilities.find(a => a.id === id); if (!a) return;
+  a[key] = val; save();
+  // Re-render just this card
+  const card = document.getElementById(`ab_${id}`);
+  const wasOpen = card.classList.contains('open');
+  const idx = s.abilities.indexOf(a);
+  card.outerHTML = renderAbilityCard(a, idx);
+  if (wasOpen) document.getElementById(`ab_${id}`)?.classList.add('open');
+  renderRightPanel();
+}
+
+function updateValue(abId, idx, val) {
+  const s = getSkill(); if (!s) return;
+  const a = s.abilities.find(a => a.id === abId); if (!a) return;
+  a.values[idx] = val; save(); renderRightPanel();
+}
+
+function addValue(abId) {
+  const s = getSkill(); if (!s) return;
+  const a = s.abilities.find(a => a.id === abId); if (!a) return;
+  a.values.push(0); save();
+  const card = document.getElementById(`ab_${abId}`);
+  const wasOpen = card.classList.contains('open');
+  const idx = s.abilities.indexOf(a);
+  card.outerHTML = renderAbilityCard(a, idx);
+  if (wasOpen) { document.getElementById(`ab_${abId}`)?.classList.add('open'); }
+}
+
+function addAbility() {
+  const s = getSkill(); if (!s) return;
+  const newId = s.abilities.length ? Math.max(...s.abilities.map(a => a.id)) + 1 : 0;
+  s.abilities.push({ name: `ability${newId}`, id: newId, maxTier: 1, minLevel: 1, enabled: true, values: [], requires: [] });
+  save(); renderTab();
+  setTimeout(() => document.getElementById(`ab_${newId}`)?.classList.add('open'), 50);
+  toast('Ability added');
+}
+
+function removeAbility(id) {
+  const s = getSkill(); if (!s) return;
+  if (!confirm('Remove this ability?')) return;
+  const name = s.abilities.find(a => a.id === id)?.name;
+  s.abilities = s.abilities.filter(a => a.id !== id);
+  // Clean up requires references
+  if (name) s.abilities.forEach(a => { a.requires = (a.requires||[]).filter(r => r !== name); });
+  save(); renderTab(); renderRightPanel();
+}
+
+function renderRequiresEditor(a, s) {
+  const others = s.abilities.filter(o => o.id !== a.id);
+  if (!others.length) return '';
+  const reqs = a.requires || [];
+  return `<div class="vals-wrap" style="margin-top:10px">
+    <div class="vals-label" style="margin-bottom:6px">Requires (must unlock before this) <span style="color:var(--muted);font-size:10px">— shown as connections in Layout tab</span></div>
+    <div class="req-chips">
+      ${others.map(o => `
+        <label class="req-chip ${reqs.includes(o.name)?'active':''}" title="Lv${o.minLevel}">
+          <input type="checkbox" ${reqs.includes(o.name)?'checked':''} onchange="toggleRequires(${a.id},'${o.name}',this.checked)">
+          ${o.name}
+        </label>`).join('')}
+    </div>
+  </div>`;
+}
+
+function toggleRequires(abId, reqName, checked) {
+  const s = getSkill(); if (!s) return;
+  const a = s.abilities.find(a => a.id === abId); if (!a) return;
+  a.requires = a.requires || [];
+  if (checked) {
+    if (!a.requires.includes(reqName)) a.requires.push(reqName);
+  } else {
+    a.requires = a.requires.filter(r => r !== reqName);
+  }
+  save();
+  // Update badge in header without full re-render
+  const card = document.getElementById(`ab_${abId}`);
+  const wasOpen = card?.classList.contains('open');
+  const idx = s.abilities.indexOf(a);
+  if (card) card.outerHTML = renderAbilityCard(a, idx);
+  if (wasOpen) document.getElementById(`ab_${abId}`)?.classList.add('open');
+  renderRightPanel();
+}
+
+// ─── CLASSES TAB ─────────────────────────────────────────────────────────────
+function renderClasses(s) {
+  return `
+  <div class="sec">Class XP Multipliers <span style="color:var(--muted);font-size:11px">+ = bonus  · − = penalty</span></div>
+  <div class="cls-grid">
+    ${ALL_CLASSES.map(c => {
+      const v = s.ClassExpMultipliers[c] ?? 0;
+      const col = v > 0 ? 'var(--green)' : v < 0 ? 'var(--red)' : 'var(--sub)';
+      return `<div class="cls-row">
+        <span class="cls-name">${c}</span>
+        <input class="cls-input" type="number" step="0.05" min="-1" max="2" value="${v}" style="color:${col}"
+          onchange="updateClassMult('${c}',+this.value)">
+      </div>`;
+    }).join('')}
+  </div>
+  <div style="margin-top:12px;display:flex;gap:8px">
+    <button class="btn btn-sec btn-sm" onclick="resetClassMults()">Reset All to 0</button>
+  </div>`;
+}
+
+function updateClassMult(cls, val) {
+  const s = getSkill(); if (!s) return;
+  s.ClassExpMultipliers[cls] = val; save(); renderRightPanel();
+}
+
+function resetClassMults() {
+  const s = getSkill(); if (!s) return;
+  ALL_CLASSES.forEach(c => s.ClassExpMultipliers[c] = 0);
+  save(); renderTab(); renderRightPanel();
+}
+
+// ─── ATTRIBUTES TAB ──────────────────────────────────────────────────────────
+function renderAttributes(s) {
+  const entries = Object.entries(s.Attributes || {});
+  return `
+  <div class="sec">Custom Attributes <button class="btn btn-primary btn-sm" onclick="addAttr()">+ Add</button></div>
+  <div class="attr-list" id="attrList">
+    ${entries.map(([k,v],i) => `
+    <div class="attr-row">
+      <input type="text" value="${k}" placeholder="key" onchange="updateAttrKey(${i},'${k}',this.value)">
+      <input type="text" value="${v}" placeholder="value" onchange="updateAttrVal('${k}',this.value)">
+      <button class="btn btn-red btn-sm" onclick="removeAttr('${k}')">✕</button>
+    </div>`).join('')}
+  </div>`;
+}
+
+function addAttr() {
+  const s = getSkill(); if (!s) return;
+  s.Attributes = s.Attributes || {};
+  s.Attributes[`key${Object.keys(s.Attributes).length}`] = 'value';
+  save(); renderTab();
+}
+
+function updateAttrKey(i, oldKey, newKey) {
+  const s = getSkill(); if (!s || oldKey === newKey) return;
+  const val = s.Attributes[oldKey];
+  delete s.Attributes[oldKey];
+  s.Attributes[newKey] = val;
+  save();
+}
+
+function updateAttrVal(key, val) {
+  const s = getSkill(); if (!s) return;
+  s.Attributes[key] = val; save();
+}
+
+function removeAttr(key) {
+  const s = getSkill(); if (!s) return;
+  delete s.Attributes[key]; save(); renderTab();
+}
+
+// ─── SYNERGIES TAB ───────────────────────────────────────────────────────────
+function renderSynergies(s) {
+  const skillOpts = skills.map(sk => `<option ${sk.name===s.name?'disabled':''} value="${sk.name}">${sk.name}</option>`).join('');
+  return `
+  <div class="sec">Synergy Sources <span style="color:var(--muted);font-size:11px">Skills that boost this skill's XP</span>
+    <button class="btn btn-primary btn-sm" onclick="addSynergy()">+ Add</button></div>
+  ${(s.synergySources||[]).map((syn,i) => `
+  <div class="syn-row">
+    <div class="fg" style="margin:0"><label>Source Skill</label>
+      <select onchange="updateSynergy(${i},'skillName',this.value)">
+        ${skills.filter(sk=>sk.name!==s.name).map(sk=>`<option ${sk.name===syn.skillName?'selected':''}>${sk.name}</option>`).join('')}
+      </select></div>
+    <div class="fg" style="margin:0"><label>XP Bonus (e.g. 0.05)</label>
+      <input type="number" step="0.01" value="${syn.bonus}" onchange="updateSynergy(${i},'bonus',+this.value)"></div>
+    <button class="btn btn-red btn-sm" style="align-self:flex-end" onclick="removeSynergy(${i})">✕</button>
+  </div>`).join('')}
+
+  <div class="sec" style="margin-top:20px">Prerequisite Skills <span style="color:var(--muted);font-size:11px">Ability unlock requirements from other skills</span>
+    <button class="btn btn-primary btn-sm" onclick="addPrereq()">+ Add</button></div>
+  ${Object.entries(s.prerequisiteSkills||{}).map(([abName,req]) => `
+  <div class="prereq-row">
+    <div class="fg" style="margin:0"><label>Ability Name</label>
+      <select onchange="updatePrereqAbility('${abName}',this.value)">
+        ${s.abilities.map(a=>`<option ${a.name===abName?'selected':''}>${a.name}</option>`).join('')}
+      </select></div>
+    <div class="fg" style="margin:0"><label>Required Skill</label>
+      <select onchange="updatePrereq('${abName}','skillName',this.value)">
+        ${skills.filter(sk=>sk.name!==s.name).map(sk=>`<option ${sk.name===req.skillName?'selected':''}>${sk.name}</option>`).join('')}
+      </select></div>
+    <div class="fg" style="margin:0"><label>Min Level</label>
+      <input type="number" min="1" max="25" value="${req.minLevel}" onchange="updatePrereq('${abName}','minLevel',+this.value)"></div>
+    <button class="btn btn-red btn-sm" style="align-self:flex-end" onclick="removePrereq('${abName}')">✕</button>
+  </div>`).join('')}`;
+}
+
+function addSynergy() {
+  const s = getSkill(); if (!s) return;
+  s.synergySources = s.synergySources || [];
+  const others = skills.filter(sk => sk.name !== s.name);
+  if (!others.length) { toast('No other skills to link'); return; }
+  s.synergySources.push({ skillName: others[0].name, bonus: 0.05 });
+  save(); renderTab();
+}
+
+function updateSynergy(i, key, val) {
+  const s = getSkill(); if (!s) return;
+  s.synergySources[i][key] = val; save();
+}
+
+function removeSynergy(i) {
+  const s = getSkill(); if (!s) return;
+  s.synergySources.splice(i, 1); save(); renderTab();
+}
+
+function addPrereq() {
+  const s = getSkill(); if (!s || !s.abilities.length) { toast('Add abilities first'); return; }
+  const others = skills.filter(sk => sk.name !== s.name);
+  if (!others.length) { toast('No other skills to link'); return; }
+  s.prerequisiteSkills = s.prerequisiteSkills || {};
+  const ab = s.abilities[0];
+  s.prerequisiteSkills[ab.name] = { skillName: others[0].name, minLevel: 5 };
+  save(); renderTab();
+}
+
+function updatePrereqAbility(oldName, newName) {
+  const s = getSkill(); if (!s) return;
+  const val = s.prerequisiteSkills[oldName];
+  delete s.prerequisiteSkills[oldName];
+  s.prerequisiteSkills[newName] = val;
+  save(); renderTab();
+}
+
+function updatePrereq(abName, key, val) {
+  const s = getSkill(); if (!s) return;
+  s.prerequisiteSkills[abName][key] = val; save();
+}
+
+function removePrereq(abName) {
+  const s = getSkill(); if (!s) return;
+  delete s.prerequisiteSkills[abName]; save(); renderTab();
+}
+
+// ─── LAYOUT TAB ──────────────────────────────────────────────────────────────
+const L_CX = 450, L_CY = 320; // canvas centre
+
+function initFreeformPositions(s) {
+  const unplaced = s.abilities.filter(a => !a.guiPosition);
+  if (!unplaced.length) return;
+  const rings = [
+    { minLv:1,  maxLv:4,  r:130 },
+    { minLv:5,  maxLv:9,  r:230 },
+    { minLv:10, maxLv:25, r:320 }
+  ];
+  rings.forEach(ring => {
+    const grp = unplaced.filter(a => a.minLevel >= ring.minLv && a.minLevel <= ring.maxLv);
+    grp.forEach((a, i) => {
+      const angle = grp.length === 1 ? -Math.PI/2 : (2*Math.PI*i/grp.length) - Math.PI/2;
+      a.guiPosition = {
+        x: Math.round(L_CX + ring.r * Math.cos(angle)),
+        y: Math.round(L_CY + ring.r * Math.sin(angle))
+      };
+    });
+  });
+}
+
+// Ability → emoji icon lookup
+const ABILITY_ICONS = {
+  // combat
+  swordsman:'🗡️',archer:'🏹',spearman:'⚔️',tank:'🛡️',defender:'🛡️',guardian:'⚜️',
+  ironfist:'💢',monk:'🧘',looter:'💰',vampire:'🩸',sniper:'🎯',freshflesh:'❤️',
+  warrior:'⚔️',bully:'👊',burningrage:'🔥',bloodlust:'💀',adrenalinerush:'⚡',
+  shovelknight:'🪖',heavyarmorexpert:'🛡️',lightarmorexpert:'🪶',armoredagility:'💨',
+  drunkenmaster:'🍺',monsterexpert:'🦌',toolmastery:'🔧',
+  // mining
+  stonebreaker:'🪨',stonecutter:'✂️',oreminer:'💎',gemstoneminer:'💎',pickaxeexpert:'⛏',
+  carefulminer:'🤲',miner:'⛏',crystalseeker:'🔮',bomberman:'💣',geologist:'🔍',
+  veinminer:'⛏',tunneldigger:'🔦',blaster:'💥',
+  // farming
+  greenthumb:'🌱',demetersbless:'🌺',gatherer:'🌿',orchardist:'🌳',repotting:'🪴',
+  recycler:'♻️',carefulhands:'🌾',farmer:'🌾',brightharvest:'☀️',cultivatedseeds:'🌱',
+  beekeeper:'🐝',extensivefarming:'🌾',composting:'♻️',crossbreeding:'🧬',beemaster:'🏆',
+  // forestry
+  lumberjack:'🪓',afforestation:'🌳',moreladders:'🪜',resinfarmer:'🫙',treenursery:'🌱',
+  axeexpert:'🪓',carefullumberjack:'🌲',forester:'🌲',charcoalburner:'🔥',stoker:'🪵',
+  grafter:'✂️',resinextractor:'🧪',
+  // husbandry
+  hunter:'🦌',butcher:'🍖',furrier:'🐑',bonebreaker:'💀',rancher:'🌾',feeder:'🥣',
+  lightfooted:'🪶',shepherd:'🐄',preserver:'🧂',tanner:'🔩',cheesycheese:'🧀',
+  catcher:'🪤',breeder:'🐣',masshusbandry:'🏆',
+  // digging
+  claydigger:'🏺',peatcutter:'🪵',saltpeterdigger:'🧪',shovelexpert:'🔧',carefuldigger:'🌿',
+  mixedclay:'🧱',quickpan:'⚡',golddigger:'💰',scrapdetect:'🔍',scrapspecial:'⚙️',
+  // metalworking
+  smelter:'🔥',hammerexpert:'🔧',finishingtouch:'✨',duplicator:'📋',mastersmith:'⚙️',
+  automatedsmith:'🏭',heatinghits:'⚡',metalrecovery:'♻️',blacksmith:'⚒️',
+  // pottery
+  thrift:'♻️',layerlayer:'📐',perfectfit:'⭐',perfectionist:'🌟',fastpotter:'⚡',
+  jackpot:'🏆',infallible:'🛡️',inspiration:'✨',
+  // cooking
+  canteencook:'🥘',fastfood:'⚡',welldone:'🍖',saltybackpack:'🎒',gourmet:'⭐',
+  happymeal:'😄',juicer:'🍵',dilution:'🫙',eggtimer:'⏱️',
+  // survival
+  explorer:'🗺️',pathfinder:'👣',survivor:'🏕️',forager:'🌿',
+  // temporaladaptation
+  tempstable:'🛡️',caveman:'⛏',tempadapted:'💎',temprecovery:'❤️',shifter:'⚡',
+  fastforward:'⏩',stableminer:'⛏',stablewarrior:'⚔️',timeless:'🔮',
+  // alchemy
+  herbalism:'🌿',extraction:'⚗️',tincturemastery:'🧪',alchemist:'⚗️',transmutation:'⚡',
+  grandtransmutation:'🔮',distillation:'💧',catalysis:'🧫',
+  // engineering
+  mechanicalaptitude:'⚙️',gearefficiency:'🔩',engineer:'🏭',contraptionbuilder:'🛠️',
+  automatedharvester:'🤖',precisionsmithingjig:'📐',steamassistedbellows:'💨',
+  blueprintmastery:'📋',granddesign:'🏗️',
+  // masonry
+  stonemason:'🪨',foundationlayer:'🏗️',mason:'🧱',roadbuilder:'🛤️',mortarmixing:'🫙',
+  archengineering:'🏛️',structuralanalysis:'📐',quarryexpertise:'⛏',grandmonument:'🏆',
+};
+const SKILL_ICONS = {
+  mining:'⛏',combat:'⚔️',farming:'🌾',forestry:'🌲',husbandry:'🐄',digging:'🪣',
+  metalworking:'🔨',pottery:'🏺',cooking:'🍳',survival:'🎒',temporaladaptation:'🌀',
+  alchemy:'⚗️',engineering:'⚙️',masonry:'🧱'
+};
+function getAbilityIcon(a, skillName) {
+  return ABILITY_ICONS[a.name] || SKILL_ICONS[skillName] || '✦';
+}
+
+function doAutoLayout() {
+  const s = getSkill(); if (!s) return;
+  s.abilities.forEach(a => delete a.guiPosition);
+  layoutSelNode = null; layoutConnectStart = null;
+  previewMode = false; previewUnlocked.clear();
+  save(); renderTab();
+  toast('Layout reset');
+}
+
+function renderLayout(s) {
+  s.abilities.forEach(a => { if (!a.requires) a.requires = []; });
+  initFreeformPositions(s);
+  const color = SKILL_COLORS[s.name] || '#7c5cbf';
+  const SVG_W = 900, SVG_H = 640;
+  const previewOn = previewMode;
+  const sel = layoutSelNode;
+  const cStart = layoutConnectStart;
+
+  // ── Defs ──────────────────────────────────────────────────────────────────
+  const defs = `<defs>
+    <radialGradient id="bgGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%"   stop-color="${color}1a"/>
+      <stop offset="55%"  stop-color="${color}07"/>
+      <stop offset="100%" stop-color="transparent"/>
+    </radialGradient>
+    <filter id="gf1" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="3" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="gf2" x="-70%" y="-70%" width="240%" height="240%">
+      <feGaussianBlur stdDeviation="7" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="gf3" x="-90%" y="-90%" width="280%" height="280%">
+      <feGaussianBlur stdDeviation="13" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>`;
+
+  // ── Background glow ellipse ────────────────────────────────────────────────
+  const bgGlow = `<ellipse cx="${L_CX}" cy="${L_CY}" rx="390" ry="300" fill="url(#bgGlow)"/>`;
+
+  // ── Guide rings ───────────────────────────────────────────────────────────
+  const guides = layoutGuides
+    ? [130, 230, 320].map(r =>
+        `<circle cx="${L_CX}" cy="${L_CY}" r="${r}" fill="none" stroke="${color}"
+          stroke-opacity="0.07" stroke-width="1" stroke-dasharray="4 6"/>`)
+        .join('')
+    : '';
+
+  // ── Center hub (diamond) ──────────────────────────────────────────────────
+  const hubPts = `${L_CX},${L_CY-26} ${L_CX+22},${L_CY} ${L_CX},${L_CY+26} ${L_CX-22},${L_CY}`;
+  const hub = `<g id="hubNode" style="pointer-events:none">
+    <polygon points="${hubPts}" fill="#0c1420" stroke="${color}" stroke-width="2" filter="url(#gf2)"/>
+    <polygon points="${hubPts}" fill="${color}18"/>
+    <text x="${L_CX}" y="${L_CY+1}" text-anchor="middle" dominant-baseline="middle"
+      fill="${color}" font-size="9.5" font-family="Segoe UI,sans-serif" font-weight="600"
+      letter-spacing="0.3">${s.name.slice(0,8)}</text>
+  </g>`;
+
+  // ── Connection lines ──────────────────────────────────────────────────────
+  const roots = s.abilities.filter(a => !(a.requires||[]).length);
+  let linesSvg = '';
+  // Hub → root abilities
+  roots.forEach(a => {
+    if (!a.guiPosition) return;
+    linesSvg += `<line x1="${L_CX}" y1="${L_CY}" x2="${a.guiPosition.x}" y2="${a.guiPosition.y}"
+      stroke="${color}50" stroke-width="1.5" stroke-dasharray="6 4" opacity="0.7"/>`;
+  });
+  // Requires edges (parent → child)
+  s.abilities.forEach(a => {
+    (a.requires||[]).forEach(rName => {
+      const par = s.abilities.find(p => p.name === rName);
+      if (!par?.guiPosition || !a.guiPosition) return;
+      const active = !previewOn || (previewUnlocked.has(par.id) && previewUnlocked.has(a.id));
+      linesSvg += `<line id="cl_${par.id}_${a.id}"
+        x1="${par.guiPosition.x}" y1="${par.guiPosition.y}"
+        x2="${a.guiPosition.x}" y2="${a.guiPosition.y}"
+        stroke="${active ? color : '#1a2838'}" stroke-width="${active ? 2 : 1.5}"
+        stroke-opacity="${active ? 0.85 : 0.35}" stroke-dasharray="6 4"
+        class="edge-line" data-from="${par.id}" data-to="${a.id}"
+        style="cursor:${layoutTool==='erase'?'crosshair':'default'}"/>`;
+    });
+  });
+
+  // ── Pending connection line (CONNECT mode) ────────────────────────────────
+  let pendingLine = '';
+  if (cStart) {
+    const src = s.abilities.find(a => a.id === cStart);
+    if (src?.guiPosition) {
+      pendingLine = `<line id="pendingLine"
+        x1="${src.guiPosition.x}" y1="${src.guiPosition.y}"
+        x2="${src.guiPosition.x}" y2="${src.guiPosition.y}"
+        stroke="#f59e0b" stroke-width="1.8" stroke-dasharray="5 4" opacity="0.8"/>`;
+    }
+  }
+
+  // ── Ability nodes ─────────────────────────────────────────────────────────
+  const NODE_R = 26;
+  const nodesSvg = s.abilities.map(a => {
+    const { x, y } = a.guiPosition;
+    const isSelected  = sel === a.id;
+    const isConnStart = cStart === a.id;
+    const isUnlocked  = previewOn ? previewUnlocked.has(a.id) : false;
+    const isAvail     = !previewOn || canUnlock(s, a);
+    const isLocked    = previewOn && !isUnlocked;
+
+    const ringCol  = isSelected ? '#ffffff'
+      : isConnStart ? '#f59e0b'
+      : isUnlocked ? color
+      : isAvail ? color
+      : '#253040';
+    const filter   = isSelected || isConnStart ? 'filter="url(#gf3)"'
+      : isUnlocked ? 'filter="url(#gf2)"'
+      : isAvail && !previewOn ? 'filter="url(#gf1)"'
+      : '';
+    const innerFill = isLocked ? '#05091280' : `${color}22`;
+    const labelCol  = isLocked ? '#2a3848' : color + 'cc';
+    const textCol   = isLocked ? '#384858' : '#dde4f0';
+    const icon      = getAbilityIcon(a, s.name);
+    const label     = a.name.length > 10 ? a.name.slice(0,9)+'…' : a.name;
+    const sw        = isSelected || isConnStart ? 2.5 : 1.8;
+
+    const clickFn  = previewOn
+      ? `onclick="togglePreviewUnlock(${a.id})"`
+      : `onclick="layoutClickNode(event,${a.id})"`;
+    const dragFn   = !previewOn && layoutTool === 'select'
+      ? `onmousedown="layoutStartDrag(event,${a.id})"` : '';
+    const cursor   = previewOn
+      ? (isAvail || isUnlocked ? 'pointer' : 'default')
+      : layoutTool === 'select' ? 'grab'
+      : layoutTool === 'connect' ? 'crosshair'
+      : 'crosshair';
+
+    return `<g class="ab-node" data-id="${a.id}" transform="translate(${x},${y})"
+        style="cursor:${cursor}" ${clickFn} ${dragFn}>
+      <circle r="${NODE_R+7}" fill="${(isSelected||isConnStart) ? color+'1a' : 'transparent'}"/>
+      <circle r="${NODE_R}" fill="#090e1a" stroke="${ringCol}" stroke-width="${sw}" ${filter}/>
+      <circle r="${NODE_R-5}" fill="${innerFill}"/>
+      <text y="-${NODE_R+7}" text-anchor="middle" fill="${labelCol}"
+        font-size="7" font-family="Segoe UI,sans-serif" letter-spacing="0.4">Lv${a.minLevel}</text>
+      <text y="6" text-anchor="middle" dominant-baseline="middle"
+        font-size="14" font-family="Segoe UI,sans-serif">${icon}</text>
+      <text y="${NODE_R+11}" text-anchor="middle" fill="${labelCol}"
+        font-size="8" font-family="Segoe UI,sans-serif">${label}</text>
+      <text y="${NODE_R+21}" text-anchor="middle" fill="${color}55"
+        font-size="6.5" font-family="Segoe UI,sans-serif">T${a.maxTier}</text>
+    </g>`;
+  }).join('');
+
+  // ── Right panel: node properties ──────────────────────────────────────────
+  const selAbility = sel ? s.abilities.find(a => a.id === sel) : null;
+  const rightPanel = selAbility ? `
+    <div style="font-size:12px;font-weight:600;color:${color};margin-bottom:12px">${selAbility.name}</div>
+    <div class="fg"><label>Name</label>
+      <input type="text" value="${selAbility.name}"
+        onchange="updateAbility(${selAbility.id},'name',this.value);layoutSelNode=${selAbility.id};renderTab()"></div>
+    <div class="fg"><label>Min Level</label>
+      <input type="number" min="1" max="25" value="${selAbility.minLevel}"
+        onchange="updateAbility(${selAbility.id},'minLevel',+this.value);layoutSelNode=${selAbility.id};renderTab()"></div>
+    <div class="fg"><label>Max Tiers</label>
+      <input type="number" min="1" max="5" value="${selAbility.maxTier}"
+        onchange="updateAbility(${selAbility.id},'maxTier',+this.value);layoutSelNode=${selAbility.id};renderTab()"></div>
+    <div class="sec" style="margin:10px 0 8px">Requires</div>
+    <div class="req-chips">
+      ${s.abilities.filter(o=>o.id!==selAbility.id).map(o=>`
+        <label class="req-chip ${(selAbility.requires||[]).includes(o.name)?'active':''}">
+          <input type="checkbox" ${(selAbility.requires||[]).includes(o.name)?'checked':''}
+            onchange="toggleRequires(${selAbility.id},'${o.name}',this.checked);layoutSelNode=${selAbility.id};renderTab()">
+          ${o.name}
+        </label>`).join('')}
+    </div>
+    <div style="margin-top:16px">
+      <button class="btn btn-red btn-sm" onclick="layoutSelNode=null;removeAbility(${selAbility.id})">✕ Remove</button>
+    </div>` : `
+    <div style="color:var(--muted);font-size:11px;text-align:center;margin-top:40px">
+      <div style="font-size:22px;margin-bottom:8px;color:${color}88">◆</div>
+      Select a node<br>to edit properties
+    </div>`;
+
+  // ── Toolbar button helper ─────────────────────────────────────────────────
+  const toolOn  = (t) => layoutTool === t
+    ? 'background:#18083a;border-color:#7030c8;color:#d0b8f8;' : '';
+  const flagOn  = (f) => f ? 'background:#18083a;border-color:#7030c8;color:#d0b8f8;' : '';
+  const canvasCursor = layoutTool === 'connect' ? 'crosshair'
+    : layoutTool === 'erase' ? 'crosshair' : 'default';
+
+  return `
+  <div style="display:flex;flex-direction:column;gap:8px">
+    <!-- Toolbar -->
+    <div style="display:flex;gap:5px;align-items:center;flex-wrap:wrap">
+      <button class="btn btn-sm" style="${toolOn('select')}"  onclick="setLayoutTool('select')">✦ SELECT</button>
+      <button class="btn btn-sm" style="${toolOn('connect')}" onclick="setLayoutTool('connect')">⟶ CONNECT</button>
+      <button class="btn btn-sm" style="${toolOn('erase')}"   onclick="setLayoutTool('erase')">✕ ERASE</button>
+      <div style="width:1px;height:16px;background:var(--border);margin:0 3px"></div>
+      <button class="btn btn-sm" style="${flagOn(layoutGuides)}" onclick="toggleLayoutGuides()">⊹ GUIDES</button>
+      <button class="btn btn-sm"
+        style="${flagOn(previewOn)}${previewOn?'color:#6ee7a0;border-color:#1a5a30;background:#0d2e1a;':''}"
+        onclick="togglePreviewMode()">▶ PREVIEW${previewOn?' ON':''}</button>
+      ${previewOn ? `<button class="btn btn-sec btn-sm" onclick="resetPreview()">↺ Reset</button>` : ''}
+      <button class="btn btn-sec btn-sm" style="margin-left:auto" onclick="doAutoLayout()">⟳ Auto-Arrange</button>
+    </div>
+    <!-- Canvas + Properties -->
+    <div style="display:flex;gap:8px;overflow:hidden">
+      <div style="overflow:auto;border:1px solid var(--border);border-radius:8px;background:#050810;flex:1">
+        <svg id="skillSvg" width="${SVG_W}" height="${SVG_H}"
+          style="display:block;user-select:none;min-width:${SVG_W}px;cursor:${canvasCursor}"
+          onmousemove="layoutMouseMove(event)" onclick="layoutBgClick(event)">
+          <rect width="${SVG_W}" height="${SVG_H}" fill="#050810"/>
+          ${defs}
+          ${bgGlow}
+          ${guides}
+          <g id="svgLines">${linesSvg}</g>
+          ${pendingLine}
+          ${hub}
+          <g id="svgNodes">${nodesSvg}</g>
+        </svg>
+      </div>
+      <div style="width:215px;flex-shrink:0;background:var(--panel);border:1px solid var(--border);
+          border-radius:8px;padding:14px;overflow-y:auto;max-height:${SVG_H}px">
+        ${rightPanel}
+      </div>
+    </div>
+    <!-- Legend -->
+    <div style="display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--muted)">
+      ${layoutTool==='select'  ? '<span>Drag nodes to reposition</span>' : ''}
+      ${layoutTool==='connect' ? `<span style="color:#f59e0b">Click source node → click target to draw dependency</span>` : ''}
+      ${layoutTool==='erase'   ? `<span style="color:var(--red)">Click a node or dashed line to remove it</span>` : ''}
+      <span>◆ = Skill hub · ○ = Ability · --- = Dependency</span>
+    </div>
+  </div>`;
+}
+
+function setLayoutTool(t) {
+  layoutTool = t; layoutConnectStart = null;
+  renderTab();
+}
+
+function toggleLayoutGuides() {
+  layoutGuides = !layoutGuides; renderTab();
+}
+
+function layoutClickNode(e, id) {
+  e.stopPropagation();
+  const s = getSkill(); if (!s) return;
+
+  if (layoutTool === 'erase') {
+    const a = s.abilities.find(a => a.id === id); if (!a) return;
+    if (!confirm(`Remove ability "${a.name}"?`)) return;
+    if (layoutSelNode === id) layoutSelNode = null;
+    removeAbility(id); return;
+  }
+
+  if (layoutTool === 'connect') {
+    if (!layoutConnectStart) {
+      layoutConnectStart = id; renderTab(); return;
+    }
+    if (layoutConnectStart === id) {
+      layoutConnectStart = null; renderTab(); return;
+    }
+    // Draw edge: layoutConnectStart is the parent, id is the child
+    const src = s.abilities.find(a => a.id === layoutConnectStart);
+    const tgt = s.abilities.find(a => a.id === id);
+    if (src && tgt) {
+      tgt.requires = tgt.requires || [];
+      if (!tgt.requires.includes(src.name)) { tgt.requires.push(src.name); save(); }
+      toast(`${tgt.name} now requires ${src.name}`);
+    }
+    layoutConnectStart = null; renderTab(); return;
+  }
+
+  // SELECT
+  layoutSelNode = layoutSelNode === id ? null : id;
+  renderTab();
+}
+
+function layoutBgClick(e) {
+  const t = e.target;
+  if (t.closest('.ab-node') || t.closest('#hubNode')) return;
+
+  // Erase edge by clicking on the line
+  if (layoutTool === 'erase' && t.classList.contains('edge-line')) {
+    const fromId = +t.dataset.from, toId = +t.dataset.to;
+    const s = getSkill(); if (!s) return;
+    const fromAb = s.abilities.find(a => a.id === fromId);
+    const toAb   = s.abilities.find(a => a.id === toId);
+    if (fromAb && toAb) {
+      toAb.requires = (toAb.requires||[]).filter(r => r !== fromAb.name);
+      save(); renderTab(); toast('Connection removed');
+    }
+    return;
+  }
+
+  if (layoutConnectStart) { layoutConnectStart = null; renderTab(); return; }
+  if (layoutSelNode)      { layoutSelNode = null;       renderTab(); }
+}
+
+function layoutMouseMove(e) {
+  const ln = document.getElementById('pendingLine');
+  if (!ln || !layoutConnectStart) return;
+  const svg = document.getElementById('skillSvg'); if (!svg) return;
+  const pt = svg.createSVGPoint();
+  pt.x = e.clientX; pt.y = e.clientY;
+  const sp = pt.matrixTransform(svg.getScreenCTM().inverse());
+  ln.setAttribute('x2', sp.x); ln.setAttribute('y2', sp.y);
+}
+
+function layoutStartDrag(e, id) {
+  if (layoutTool !== 'select') return;
+  e.stopPropagation(); e.preventDefault();
+  const svg = document.getElementById('skillSvg'); if (!svg) return;
+  const s = getSkill(); if (!s) return;
+  const a = s.abilities.find(ab => ab.id === id); if (!a || !a.guiPosition) return;
+
+  layoutSelNode = id;
+  const origX = a.guiPosition.x, origY = a.guiPosition.y;
+  const nodeEl = svg.querySelector(`.ab-node[data-id="${id}"]`);
+
+  function svgPt(ev) {
+    const p = svg.createSVGPoint(); p.x = ev.clientX; p.y = ev.clientY;
+    return p.matrixTransform(svg.getScreenCTM().inverse());
+  }
+  const start = svgPt(e);
+  let moved = false;
+  if (nodeEl) nodeEl.style.cursor = 'grabbing';
+
+  function onMove(ev) {
+    const cur = svgPt(ev);
+    const nx = Math.round(origX + cur.x - start.x);
+    const ny = Math.round(origY + cur.y - start.y);
+    if (Math.abs(nx - origX) > 2 || Math.abs(ny - origY) > 2) moved = true;
+    if (nodeEl) nodeEl.setAttribute('transform', `translate(${nx},${ny})`);
+    a.guiPosition = { x: nx, y: ny };
+    // Update connected line endpoints live
+    (a.requires||[]).forEach(rName => {
+      const par = s.abilities.find(p => p.name === rName); if (!par?.guiPosition) return;
+      const ln = document.getElementById(`cl_${par.id}_${a.id}`); if (!ln) return;
+      ln.setAttribute('x2', nx); ln.setAttribute('y2', ny);
+    });
+    s.abilities.forEach(child => {
+      if (!(child.requires||[]).includes(a.name) || !child.guiPosition) return;
+      const ln = document.getElementById(`cl_${a.id}_${child.id}`); if (!ln) return;
+      ln.setAttribute('x1', nx); ln.setAttribute('y1', ny);
+    });
+  }
+
+  function onUp() {
+    if (moved) { save(); renderRightPanel(); }
+    if (nodeEl) nodeEl.style.cursor = 'grab';
+    window.removeEventListener('mousemove', onMove);
+    window.removeEventListener('mouseup', onUp);
+  }
+  window.addEventListener('mousemove', onMove);
+  window.addEventListener('mouseup', onUp);
+}
+
+// preview helpers ─────────────────────────────────────────────────────────────
+function canUnlock(s, a) {
+  if (!previewMode) return true;
+  const reqs = a.requires || [];
+  if (!reqs.length) return true;
+  return reqs.every(rName => {
+    const par = s.abilities.find(p => p.name === rName);
+    return par && previewUnlocked.has(par.id);
+  });
+}
+
+function togglePreviewUnlock(id) {
+  const s = getSkill(); if (!s) return;
+  const a = s.abilities.find(ab => ab.id === id); if (!a) return;
+  if (previewUnlocked.has(id)) {
+    previewUnlocked.delete(id);
+    s.abilities.forEach(ab => { if ((ab.requires||[]).includes(a.name)) previewUnlocked.delete(ab.id); });
+  } else {
+    if (canUnlock(s, a)) previewUnlocked.add(id);
+    else { toast('Unlock prerequisites first'); return; }
+  }
+  renderTab();
+}
+
+function togglePreviewMode() { previewMode = !previewMode; previewUnlocked.clear(); renderTab(); }
+function resetPreview()      { previewUnlocked.clear(); renderTab(); }
+
+// ─── LAYOUT TAB ── end (placeholder so renderTab call is consistent) ──────────
+function initLayoutDrag() { /* handled inline via onmousedown */
+  // stub kept so legacy callers don't break
+}
+
+// ─── RIGHT PANEL ──────────────────────────────────────────────────────────────
+function renderRightPanel() {
+  const s = getSkill();
+  const panel = document.getElementById('rPanel');
+  if (!s) { panel.innerHTML = '<p style="color:var(--muted);font-size:12px">Select a skill to see stats.</p>'; return; }
+
+  const xp = calcXP(s);
+  const bonus = Object.entries(s.ClassExpMultipliers).filter(([,v])=>v>0).map(([c])=>c).join(', ') || 'none';
+  const pen = Object.entries(s.ClassExpMultipliers).filter(([,v])=>v<0).map(([c])=>c).join(', ') || 'none';
+
+  panel.innerHTML = `
+    <div>
+      <div class="stat-row"><span class="stat-l">Skill</span><span class="stat-v" style="color:${SKILL_COLORS[s.name]||'var(--glow)'}">${s.name}</span></div>
+      <div class="stat-row"><span class="stat-l">Levels</span><span class="stat-v">${s.minLevel} → ${s.maxLevel}</span></div>
+      <div class="stat-row"><span class="stat-l">XP to Lv25</span><span class="stat-v">${xp.total.toLocaleString()}</span></div>
+      <div class="stat-row"><span class="stat-l">Abilities</span><span class="stat-v">${s.abilities.length}</span></div>
+      <div class="stat-row"><span class="stat-l">Bonuses</span><span class="stat-v" style="font-size:11px;color:var(--green)">${bonus}</span></div>
+      <div class="stat-row"><span class="stat-l">Penalties</span><span class="stat-v" style="font-size:11px;color:var(--red)">${pen}</span></div>
+    </div>
+    <div>
+      <div class="vals-label" style="margin-bottom:8px;font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--sub)">XP Curve</div>
+      <canvas id="xpChart" height="160"></canvas>
+    </div>
+    <div>
+      <div class="vals-label" style="margin-bottom:6px;font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--sub)">JSON Preview</div>
+      <div class="json-pre">${JSON.stringify(buildExportObj(s), null, 2)}</div>
+    </div>`;
+
+  drawChart(s, xp.levels);
+}
+
+function calcXP(s) {
+  const levels = [];
+  let total = 0;
+  for (let lvl = 1; lvl < s.maxLevel; lvl++) {
+    let xp;
+    if (s.expEquation === 'quadratic') {
+      xp = Math.round(s.expBase + s.expMult * lvl * lvl * s.expValue);
+    } else {
+      xp = Math.round(s.expBase + s.expMult * Math.log(lvl + 1) * s.expValue * 10);
+    }
+    levels.push(xp);
+    total += xp;
+  }
+  return { levels, total };
+}
+
+function drawChart(s, levels) {
+  if (chart) { chart.destroy(); chart = null; }
+  const canvas = document.getElementById('xpChart');
+  if (!canvas) return;
+  const color = SKILL_COLORS[s.name] || '#7c5cbf';
+  chart = new Chart(canvas.getContext('2d'), {
+    type: 'line',
+    data: {
+      labels: levels.map((_,i) => `L${i+1}`),
+      datasets: [{ data: levels, borderColor: color, backgroundColor: color+'33', fill: true, tension: 0.3, pointRadius: 1, borderWidth: 1.5 }]
+    },
+    options: {
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: '#3a4a60', maxTicksLimit: 8, font: { size: 10 } }, grid: { color: '#1e2d44' } },
+        y: { ticks: { color: '#3a4a60', font: { size: 10 } }, grid: { color: '#1e2d44' } }
+      }
+    }
+  });
+}
+
+// ─── EXPORT / IMPORT ─────────────────────────────────────────────────────────
+function buildExportObj(s) {
+  const obj = {
+    note: "Generated by X-Skills Editor v5 · HoR-XLib 1.22 Compatible",
+    name: s.name,
+    id: s.id,
+    maxLevel: s.maxLevel,
+    minLevel: s.minLevel,
+    expBase: parseFloat(s.expBase),
+    expMult: parseFloat(s.expMult),
+    expValue: parseFloat(s.expValue),
+    expEquation: s.expEquation,
+    enabled: s.enabled,
+    expLossOnDeath: parseFloat(s.expLossOnDeath),
+    maxExpLossOnDeath: parseFloat(s.maxExpLossOnDeath),
+    abilities: s.abilities.map(a => ({
+      name: a.name, id: a.id, maxTier: a.maxTier,
+      minLevel: a.minLevel, enabled: a.enabled, values: a.values,
+      ...((a.requires && a.requires.length) ? { requires: a.requires } : {}),
+      ...(a.guiPosition ? { guiPosition: a.guiPosition } : {})
+    })),
+    Attributes: s.Attributes && Object.keys(s.Attributes).length ? s.Attributes : null,
+    ClassExpMultipliers: s.ClassExpMultipliers
+  };
+  if (s.synergySources?.length) obj.synergySources = s.synergySources;
+  if (s.prerequisiteSkills && Object.keys(s.prerequisiteSkills).length) obj.prerequisiteSkills = s.prerequisiteSkills;
+  return obj;
+}
+
+function exportSkill() {
+  const s = getSkill(); if (!s) { toast('No skill selected'); return; }
+  download(`${s.name}.json`, JSON.stringify(buildExportObj(s), null, 2));
+  toast(`Exported ${s.name}.json`);
+}
+
+function exportAll() {
+  skills.forEach(s => download(`${s.name}.json`, JSON.stringify(buildExportObj(s), null, 2)));
+  toast(`Exported ${skills.length} skill files`);
+}
+
+function download(filename, text) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([text], { type: 'application/json' }));
+  a.download = filename; a.click(); URL.revokeObjectURL(a.href);
+}
+
+function handleImport(e) {
+  const file = e.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const data = JSON.parse(ev.target.result);
+      const arr = Array.isArray(data) ? data : [data];
+      arr.forEach(raw => {
+        const existing = skills.find(s => s.name === raw.name);
+        const s = {
+          name: raw.name || 'imported', id: raw.id ?? skills.length,
+          maxLevel: raw.maxLevel ?? 25, minLevel: raw.minLevel ?? 1,
+          expBase: raw.expBase ?? 100, expMult: raw.expMult ?? 50,
+          expValue: raw.expValue ?? 4, expEquation: raw.expEquation ?? 'quadratic',
+          enabled: raw.enabled ?? true, expLossOnDeath: raw.expLossOnDeath ?? 0,
+          maxExpLossOnDeath: raw.maxExpLossOnDeath ?? 0,
+          abilities: (raw.abilities || []).map(a => ({ requires: [], ...a })),
+          Attributes: raw.Attributes || {},
+          ClassExpMultipliers: raw.ClassExpMultipliers || {},
+          synergySources: raw.synergySources || [],
+          prerequisiteSkills: raw.prerequisiteSkills || {}
+        };
+        if (existing) Object.assign(existing, s);
+        else skills.push(s);
+      });
+      save(); renderSidebar(); selectSkill(skills[skills.length - 1].id);
+      toast(`Imported ${arr.length} skill(s)`);
+    } catch { toast('Invalid JSON file'); }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+}
+
+// ─── TOAST ────────────────────────────────────────────────────────────────────
+let toastTimer;
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2400);
+}
+</script>
+</body>
+</html>
